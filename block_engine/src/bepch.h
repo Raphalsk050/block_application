@@ -1,10 +1,10 @@
 #pragma once
 
 #ifdef BENGINE_PLATFORM_WINDOWS
-#ifndef NOMINMAX
-    // See github.com/skypjack/entt/wiki/Frequently-Asked-Questions#warning-c4003-the-min-the-max-and-the-macro
-    #define NOMINMAX
-#endif
+// #ifndef NOMINMAX
+//     // See github.com/skypjack/entt/wiki/Frequently-Asked-Questions#warning-c4003-the-min-the-max-and-the-macro
+//     #define NOMINMAX
+// #endif
 #endif
 
 #include <iostream>
@@ -26,6 +26,6 @@
 #include "debug/instrumentor.h"
 
 
-#ifdef BENGINE_PLATFORM_WINDOWS
-  #include <Windows.h>
-#endif
+// #ifdef BENGINE_PLATFORM_WINDOWS
+//   #include <Windows.h>
+// #endif

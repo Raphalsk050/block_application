@@ -1,13 +1,16 @@
 #include "window.h"
+
 #include "generic_glfw_window.h"
 
 namespace BEngine {
-  Scope<Window> Window::Create(const WindowProps &props) {
+Scope<Window> Window::Create(const WindowProps &props) {
 #ifdef BENGINE_PLATFORM_APPLE
-    return CreateScope<GenericWindow>(props);
+  return CreateScope<GenericWindow>(props);
+#elif BENGINE_PLATFORM_WINDOWS
+  return CreateScope<GenericWindow>(props);
 #else
-    BENGINE_CORE_ASSERT(false, "Unknown platform!");
-    return nullptr;
+  BENGINE_CORE_ASSERT(false, "Unknown platform!");
+  return nullptr;
 #endif
-  }
 }
+}  // namespace BEngine

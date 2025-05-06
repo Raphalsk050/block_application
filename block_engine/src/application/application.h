@@ -1,76 +1,82 @@
 #pragma once
 #include "../bepch.h"
-#include "../window/window.h"
 #include "../event/window_application_event.h"
-
+#include "../layer/layer.h"
+#include "../layer/layer_stack.h"
+#include "../window/window.h"
 
 using namespace std;
 
 namespace BEngine {
-  struct ApplicationCommandLineArgs {
-    int Count = 0;
-    char **Args = nullptr;
+class ImGuiLayer;
+struct ApplicationCommandLineArgs {
+  int Count = 0;
+  char **Args = nullptr;
 
-    const char *operator[](int index) const {
-      BENGINE_CORE_ASSERT(index < Count);
-      return Args[index];
-    }
-  };
+  const char *operator[](int index) const {
+    BENGINE_CORE_ASSERT(index < Count);
+    return Args[index];
+  }
+};
 
-  struct ApplicationSpecification {
-    string Name = "Hazel Application";
-    string WorkingDirectory;
-    ApplicationCommandLineArgs CommandLineArgs;
-  };
+struct ApplicationSpecification {
+  string Name = "Block engine Application";
+  string WorkingDirectory;
+  unsigned int Width = 1280;
+  unsigned int Height = 720;
+  ApplicationCommandLineArgs CommandLineArgs;
+};
 
-  class Application {
-  public:
-    Application(const ApplicationSpecification &specification);
+class Application {
+ public:
+  Application(const ApplicationSpecification &specification);
 
-    virtual ~Application();
+  virtual ~Application();
 
-    void OnEvent(Event &e);
-    //
-    // void PushLayer(Layer *layer);
-    //
-    // void PushOverlay(Layer *layer);
+  void OnEvent(Event &e);
 
-    Window &GetWindow() const { return *window_; }
+  void PushLayer(Layer *layer);
 
-    void Close();
+  void PushOverlay(Layer *layer);
 
-    //ImGuiLayer *GetImGuiLayer() { return imgui_layer_; }
+  Window &GetWindow() const { return *window_; }
 
-    static Application &Get() { return *instance_; }
+  void Close();
 
-    const ApplicationSpecification &GetSpecification() const { return specification_; }
+  // ImGuiLayer *GetImGuiLayer() { return imgui_layer_; }
 
-    void SubmitToMainThread(const function<void()> &function);
+  static Application &Get() { return *instance_; }
 
-  public:
-    void Run();
+  const ApplicationSpecification &GetSpecification() const {
+    return specification_;
+  }
 
-    bool OnWindowClose(WindowCloseEvent &e);
+  void SubmitToMainThread(const function<void()> &function);
 
-    bool OnWindowResize(WindowResizeEvent &e);
+ public:
+  void Run();
 
-    void ExecuteMainThreadQueue();
+  bool OnWindowClose(WindowCloseEvent &e);
 
-  private:
-    ApplicationSpecification specification_;
-    Scope<Window> window_;
-    // ImGuiLayer *imgui_layer_;
-    bool running_ = true;
-    bool minimized_ = false;
-    // LayerStack m_LayerStack;
-    float last_frame_time_ = 0.0f;
+  bool OnWindowResize(WindowResizeEvent &e);
 
-    vector<function<void()> > main_thread_queue_;
-    mutex main_thread_queue_mutex_;
+  void ExecuteMainThreadQueue();
 
-  private:
-    static Application *instance_;
-  };
+ private:
+  ApplicationSpecification specification_;
+  Scope<Window> window_;
+  ImGuiLayer *imgui_layer_;
+  bool running_ = true;
+  bool minimized_ = false;
+  LayerStack layer_stack_;
+  float last_frame_time_ = 0.0f;
 
-  Application* CreateApplication(ApplicationCommandLineArgs args);
-} // BEngine
+  vector<function<void()> > main_thread_queue_;
+  mutex main_thread_queue_mutex_;
+
+ private:
+  static Application *instance_;
+};
+
+Application *CreateApplication(ApplicationCommandLineArgs args);
+}  // namespace BEngine

@@ -11,6 +11,7 @@ set(glfw_DIR third_party/glfw)
 set(glad_DIR third_party/glad)
 set(spdlog_DIR third_party/spdlog)
 set(linmath_DIR third_party/linmath)
+set(imgui_DIR third_party/ImGui)
 
 ###############################################################
 #### platform detection #######################################
@@ -20,6 +21,7 @@ set(linmath_DIR third_party/linmath)
 add_subdirectory(${glm_DIR})
 add_subdirectory(${glfw_DIR})
 add_subdirectory(${spdlog_DIR})
+add_subdirectory(${imgui_DIR})
 
 ###############################################################
 #### platform detection #######################################
@@ -32,6 +34,7 @@ add_library(glad STATIC
 include_directories(
         ${glad_DIR}/include
         ${linmath_DIR}
+        ${imgui_DIR}
 )
 
 file(GLOB_RECURSE ENGINE_SRC
@@ -40,7 +43,8 @@ file(GLOB_RECURSE ENGINE_SRC
 )
 
 add_library(block_engine STATIC
-        ${ENGINE_SRC})
+        ${ENGINE_SRC}
+)
 
 
 # Compile commands
@@ -80,4 +84,11 @@ endif ()
 #### linked libraries #########################################
 ###############################################################
 
-target_link_libraries(block_engine PUBLIC glm glfw glad spdlog)
+target_link_libraries(ImGui PUBLIC glm glfw glad)
+target_include_directories(ImGui PUBLIC
+        ${glad_DIR}/include
+        ${linmath_DIR}
+        ${imgui_DIR}
+)
+
+target_link_libraries(block_engine PUBLIC glm glfw glad spdlog ImGui)
