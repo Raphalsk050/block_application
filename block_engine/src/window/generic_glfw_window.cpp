@@ -8,63 +8,63 @@
 #include "../renderer/renderer.h"
 
 namespace BEngine {
+  static uint8_t s_GLFWWindowCount = 0;
 
-static uint8_t s_GLFWWindowCount = 0;
-
-static void GLFWErrorCallback(int error, const char* description) {
-  BENGINE_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
-}
-
-GenericWindow::GenericWindow(const WindowProps& props) {
-  BENGINE_PROFILE_FUNCTION();
-
-  GenericWindow::Init(props);
-}
-
-GenericWindow::~GenericWindow() {
-  BENGINE_PROFILE_FUNCTION();
-
-  Shutdown();
-}
-
-void GenericWindow::Init(const WindowProps& props) {
-  BENGINE_PROFILE_FUNCTION();
-
-  m_Data.Title = props.Title;
-  m_Data.Width = props.Width;
-  m_Data.Height = props.Height;
-
-  BENGINE_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width,
-                    props.Height);
-
-  if (s_GLFWWindowCount == 0) {
-    BENGINE_PROFILE_SCOPE("glfwInit");
-    int success = glfwInit();
-    BENGINE_CORE_ASSERT(success, "Could not initialize GLFW!");
-    glfwSetErrorCallback(GLFWErrorCallback);
+  static void GLFWErrorCallback(int error, const char *description) {
+    BENGINE_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
   }
 
-  {
-    BENGINE_PROFILE_SCOPE("glfwCreateWindow");
+  GenericWindow::GenericWindow(const WindowProps &props) {
+    BENGINE_PROFILE_FUNCTION();
+
+    GenericWindow::Init(props);
+  }
+
+  GenericWindow::~GenericWindow() {
+    BENGINE_PROFILE_FUNCTION();
+
+    Shutdown();
+  }
+
+  void GenericWindow::Init(const WindowProps &props) {
+    BENGINE_PROFILE_FUNCTION();
+
+    data_.Title = props.Title;
+    data_.Width = props.Width;
+    data_.Height = props.Height;
+
+    BENGINE_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width,
+                      props.Height);
+
+    if (s_GLFWWindowCount == 0) {
+      BENGINE_PROFILE_SCOPE("glfwInit");
+      int success = glfwInit();
+      BENGINE_CORE_ASSERT(success, "Could not initialize GLFW!");
+      glfwSetErrorCallback(GLFWErrorCallback);
+    } {
+      BENGINE_PROFILE_SCOPE("glfwCreateWindow");
 #if defined(DEBUG)
-    if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-      glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+      if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+      }
 #endif
-    m_Window = glfwCreateWindow((int)props.Width, (int)props.Height,
-                                m_Data.Title.c_str(), nullptr, nullptr);
-    ++s_GLFWWindowCount;
-  }
+      window_ = glfwCreateWindow((int) props.Width, (int) props.Height,
+                                  data_.Title.c_str(), nullptr, nullptr);
+      ++s_GLFWWindowCount;
+    }
 
-  m_Context = GraphicsContext::Create(m_Window);
-  m_Context->Init();
+    context_ = GraphicsContext::Create(window_);
+    context_->Init();
 
-  glfwSetWindowUserPointer(m_Window, &m_Data);
-  SetVSync(true);
+    glfwSetWindowUserPointer(window_, &data_);
+    SetVSync(true);
 
-  // Set GLFW callbacks
-  glfwSetWindowSizeCallback(
-      m_Window, [](GLFWwindow* window, int width, int height) {
-        WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+    // Set GLFW callbacks
+    glfwSetWindowSizeCallback(
+      window_, [](GLFWwindow *window, int width, int height) {
+        WindowData &data = *(WindowData *) glfwGetWindowUserPointer(window);
         data.Width = width;
         data.Height = height;
 
@@ -72,45 +72,45 @@ void GenericWindow::Init(const WindowProps& props) {
         data.EventCallback(event);
       });
 
-  glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window) {
-    WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-    WindowCloseEvent event;
-    data.EventCallback(event);
-  });
+    glfwSetWindowCloseCallback(window_, [](GLFWwindow *window) {
+      WindowData &data = *(WindowData *) glfwGetWindowUserPointer(window);
+      WindowCloseEvent event;
+      data.EventCallback(event);
+    });
 
-  glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode,
-                                  int action, int mods) {
-    WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+    glfwSetKeyCallback(window_, [](GLFWwindow *window, int key, int scancode,
+                                    int action, int mods) {
+      WindowData &data = *(WindowData *) glfwGetWindowUserPointer(window);
 
-    switch (action) {
-      case GLFW_PRESS: {
-        KeyPressedEvent event(key, 0);
-        data.EventCallback(event);
-        break;
+      switch (action) {
+        case GLFW_PRESS: {
+          KeyPressedEvent event(key, 0);
+          data.EventCallback(event);
+          break;
+        }
+        case GLFW_RELEASE: {
+          KeyReleasedEvent event(key);
+          data.EventCallback(event);
+          break;
+        }
+        case GLFW_REPEAT: {
+          KeyPressedEvent event(key, true);
+          data.EventCallback(event);
+          break;
+        }
       }
-      case GLFW_RELEASE: {
-        KeyReleasedEvent event(key);
-        data.EventCallback(event);
-        break;
-      }
-      case GLFW_REPEAT: {
-        KeyPressedEvent event(key, true);
-        data.EventCallback(event);
-        break;
-      }
-    }
-  });
+    });
 
-  glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode) {
-    WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+    glfwSetCharCallback(window_, [](GLFWwindow *window, unsigned int keycode) {
+      WindowData &data = *(WindowData *) glfwGetWindowUserPointer(window);
 
-    KeyTypedEvent event(keycode);
-    data.EventCallback(event);
-  });
+      KeyTypedEvent event(keycode);
+      data.EventCallback(event);
+    });
 
-  glfwSetMouseButtonCallback(
-      m_Window, [](GLFWwindow* window, int button, int action, int mods) {
-        WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+    glfwSetMouseButtonCallback(
+      window_, [](GLFWwindow *window, int button, int action, int mods) {
+        WindowData &data = *(WindowData *) glfwGetWindowUserPointer(window);
 
         switch (action) {
           case GLFW_PRESS: {
@@ -126,52 +126,51 @@ void GenericWindow::Init(const WindowProps& props) {
         }
       });
 
-  glfwSetScrollCallback(
-      m_Window, [](GLFWwindow* window, double xOffset, double yOffset) {
-        WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+    glfwSetScrollCallback(
+      window_, [](GLFWwindow *window, double xOffset, double yOffset) {
+        WindowData &data = *(WindowData *) glfwGetWindowUserPointer(window);
 
-        MouseScrolledEvent event((float)xOffset, (float)yOffset);
+        MouseScrolledEvent event((float) xOffset, (float) yOffset);
         data.EventCallback(event);
       });
 
-  glfwSetCursorPosCallback(
-      m_Window, [](GLFWwindow* window, double xPos, double yPos) {
-        WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+    glfwSetCursorPosCallback(
+      window_, [](GLFWwindow *window, double xPos, double yPos) {
+        WindowData &data = *(WindowData *) glfwGetWindowUserPointer(window);
 
-        MouseMovedEvent event((float)xPos, (float)yPos);
+        MouseMovedEvent event((float) xPos, (float) yPos);
         data.EventCallback(event);
       });
-}
-
-void GenericWindow::Shutdown() {
-  BENGINE_PROFILE_FUNCTION();
-
-  glfwDestroyWindow(m_Window);
-  --s_GLFWWindowCount;
-
-  if (s_GLFWWindowCount == 0) {
-    glfwTerminate();
   }
-}
 
-void GenericWindow::OnUpdate() {
-  BENGINE_PROFILE_FUNCTION();
+  void GenericWindow::Shutdown() {
+    BENGINE_PROFILE_FUNCTION();
 
-  glfwPollEvents();
-  m_Context->SwapBuffers();
-}
+    glfwDestroyWindow(window_);
+    --s_GLFWWindowCount;
 
-void GenericWindow::SetVSync(bool enabled) {
-  BENGINE_PROFILE_FUNCTION();
+    if (s_GLFWWindowCount == 0) {
+      glfwTerminate();
+    }
+  }
 
-  if (enabled)
-    glfwSwapInterval(1);
-  else
-    glfwSwapInterval(0);
+  void GenericWindow::OnUpdate() {
+    BENGINE_PROFILE_FUNCTION();
 
-  m_Data.VSync = enabled;
-}
+    glfwPollEvents();
+    context_->SwapBuffers();
+  }
 
-bool GenericWindow::IsVSync() const { return m_Data.VSync; }
+  void GenericWindow::SetVSync(bool enabled) {
+    BENGINE_PROFILE_FUNCTION();
 
-}  // namespace BEngine
+    if (enabled)
+      glfwSwapInterval(1);
+    else
+      glfwSwapInterval(0);
+
+    data_.VSync = enabled;
+  }
+
+  bool GenericWindow::IsVSync() const { return data_.VSync; }
+} // namespace BEngine

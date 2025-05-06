@@ -10,6 +10,8 @@
 #include "assert/assert.h"
 #include "debug/instrumentor.h"
 #include "log/belog.h"
+#include <imgui.h>
+#include <glm/glm.hpp>
 
 #include "renderer/renderer.h"
 #include "renderer/buffer.h"

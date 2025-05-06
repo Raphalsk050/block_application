@@ -89,8 +89,6 @@ void Application::Run() {
     Timestep timestep = time - last_frame_time_;
     last_frame_time_ = time;
 
-    BENGINE_CORE_INFO("FPS: {}", 1 / timestep);
-
     ExecuteMainThreadQueue();
 
     if (!minimized_) {
