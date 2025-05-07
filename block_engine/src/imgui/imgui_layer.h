@@ -6,7 +6,6 @@
 #include "../layer/layer.h"
 
 namespace BEngine {
-
 class ImGuiLayer : public Layer {
  public:
   ImGuiLayer();
@@ -24,10 +23,11 @@ class ImGuiLayer : public Layer {
 
   void SetDarkThemeColors();
 
+  void ShowMetricsWindow();
+
   uint32_t GetActiveWidgetID() const;
 
  private:
   bool block_events_ = true;
 };
-
 }  // namespace BEngine
