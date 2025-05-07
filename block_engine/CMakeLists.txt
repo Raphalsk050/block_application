@@ -12,6 +12,7 @@ set(glad_DIR third_party/glad)
 set(spdlog_DIR third_party/spdlog)
 set(linmath_DIR third_party/linmath)
 set(imgui_DIR third_party/ImGui)
+set(imguizmo_DIR third_party/ImGuizmo)
 
 ###############################################################
 #### platform detection #######################################
@@ -22,6 +23,7 @@ add_subdirectory(${glm_DIR})
 add_subdirectory(${glfw_DIR})
 add_subdirectory(${spdlog_DIR})
 add_subdirectory(${imgui_DIR})
+add_subdirectory(${imguizmo_DIR})
 
 ###############################################################
 #### platform detection #######################################
@@ -35,6 +37,7 @@ include_directories(
         ${glad_DIR}/include
         ${linmath_DIR}
         ${imgui_DIR}
+        ${imguizmo_DIR}
 )
 
 file(GLOB_RECURSE ENGINE_SRC
@@ -91,4 +94,4 @@ target_include_directories(ImGui PUBLIC
         ${imgui_DIR}
 )
 
-target_link_libraries(block_engine PUBLIC glm glfw glad spdlog ImGui)
+target_link_libraries(block_engine PUBLIC glm glfw glad spdlog ImGui ImGuizmo)
