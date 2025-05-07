@@ -30,8 +30,10 @@ Application::Application(const ApplicationSpecification& specification)
 
   // Renderer::Init();
 
+#ifdef DEBUG
   imgui_layer_ = new ImGuiLayer();
   PushOverlay(imgui_layer_);
+#endif
 }
 
 Application::~Application() {
@@ -98,13 +100,16 @@ void Application::Run() {
         for (Layer* layer : layer_stack_) layer->OnUpdate(timestep);
       }
 
-      imgui_layer_->Begin();
-      {
-        BENGINE_PROFILE_SCOPE("LayerStack OnImGuiRender");
+      // Only enables in debug mode
+      if (imgui_layer_) {
+        imgui_layer_->Begin();
+        {
+          BENGINE_PROFILE_SCOPE("LayerStack OnImGuiRender");
 
-        for (Layer* layer : layer_stack_) layer->OnImGuiRender();
+          for (Layer* layer : layer_stack_) layer->OnImGuiRender();
+        }
+        imgui_layer_->End();
       }
-      imgui_layer_->End();
     }
 
     window_->OnUpdate();
