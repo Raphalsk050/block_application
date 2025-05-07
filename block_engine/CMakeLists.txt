@@ -88,10 +88,19 @@ endif ()
 ###############################################################
 
 target_link_libraries(ImGui PUBLIC glm glfw glad)
+
+
 target_include_directories(ImGui PUBLIC
         ${glad_DIR}/include
         ${linmath_DIR}
         ${imgui_DIR}
+)
+
+target_link_libraries(ImGuizmo PUBLIC ImGui)
+
+target_include_directories(ImGui PUBLIC
+        ${imgui_DIR}
+
 )
 
 target_link_libraries(block_engine PUBLIC glm glfw glad spdlog ImGui ImGuizmo)
