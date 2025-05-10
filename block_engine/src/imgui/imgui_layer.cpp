@@ -16,6 +16,8 @@
 #include <ImGuizmo.h>
 #include <glad/glad.h>
 
+#include "block_engine/src/renderer/renderer_2d.h"
+
 namespace BEngine {
 ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer") {}
 
@@ -112,6 +114,13 @@ void ImGuiLayer::ShowMetricsWindow() {
       if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
       ImGui::EndPopup();
     }
+
+    auto stats = BEngine::Renderer2D::GetStats();
+    ImGui::Text("Renderer2D Stats:");
+    ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+    ImGui::Text("Quads: %d", stats.QuadCount);
+    ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
+    ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
   }
   ImGui::End();
 }

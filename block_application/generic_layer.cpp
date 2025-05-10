@@ -17,7 +17,6 @@ void GenericLayer::OnDetach() { BENGINE_PROFILE_FUNCTION(); }
 void GenericLayer::OnUpdate(BEngine::Timestep ts) {
   BENGINE_PROFILE_FUNCTION();
 
-  // Update
   camera_controller_.OnUpdate(ts);
 
   BEngine::Renderer2D::ResetStats();
@@ -28,28 +27,22 @@ void GenericLayer::OnUpdate(BEngine::Timestep ts) {
   }
 
   {
+    static float rotation = 0.0f;
+    rotation += ts * 50.0f;
+
     BENGINE_PROFILE_SCOPE("Renderer Draw");
     BEngine::Renderer2D::BeginScene(camera_controller_.GetCamera());
-    BEngine::Renderer2D::DrawQuad({0.0f, 0.0f}, {1.0f, 1.0f},
-                                  {1.0f, 0.2f, 0.3f, 1.0f});
+    BEngine::Renderer2D::DrawQuad({0.0,0.0,0.0}, {1.0f, 1.0f},{1.0f,1.0f,1.0f,1.0f});
+    BEngine::Renderer2D::DrawRotatedQuad(quad_position_, { 1.0f, 1.0f }, rotation,{1.0f,1.0f,1.0f,1.0f});
     BEngine::Renderer2D::EndScene();
   }
 }
 
 void GenericLayer::OnImGuiRender() {
   BENGINE_PROFILE_FUNCTION();
-  camera_position_ = camera_controller_.GetCamera().GetPosition();
 
   ImGui::Begin("Settings");
-
-  auto stats = BEngine::Renderer2D::GetStats();
-  ImGui::Text("Renderer2D Stats:");
-  ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-  ImGui::Text("Quads: %d", stats.QuadCount);
-  ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
-  ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
-  ImGui::Text("Camera position: (%f,%f,%f)", camera_position_.x,camera_position_.y,camera_position_.z);
-
+  ImGui::SliderFloat3("Quad position", glm::value_ptr(quad_position_), -1.0f, 1.0f, "%.3f");
   ImGui::End();
 }
 

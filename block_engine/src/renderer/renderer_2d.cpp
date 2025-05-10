@@ -176,7 +176,7 @@ void Renderer2D::Init() {
   s_Data.LineVertexBufferBase =
       new LineVertex[BEngine::Renderer2DData::MaxVertices];
 
-  /*// Text
+  // Text
   s_Data.TextVertexArray = VertexArray::Create();
 
   s_Data.TextVertexBuffer = VertexBuffer::Create(
@@ -188,7 +188,7 @@ void Renderer2D::Init() {
   s_Data.TextVertexArray->AddVertexBuffer(s_Data.TextVertexBuffer);
   s_Data.TextVertexArray->SetIndexBuffer(quadIB);
   s_Data.TextVertexBufferBase =
-      new TextVertex[BEngine::Renderer2DData::MaxVertices];*/
+      new TextVertex[BEngine::Renderer2DData::MaxVertices];
 
   s_Data.WhiteTexture = Texture2D::Create(TextureSpecification());
   uint32_t whiteTextureData = 0xffffffff;
@@ -422,8 +422,7 @@ void Renderer2D::DrawQuad(const glm::mat4& transform,
   }
 
   for (size_t i = 0; i < quadVertexCount; i++) {
-    s_Data.QuadVertexBufferPtr->Position =
-        transform * s_Data.QuadVertexPositions[i];
+    s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
     s_Data.QuadVertexBufferPtr->Color = tintColor;
     s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
     s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;

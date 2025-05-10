@@ -55,7 +55,8 @@ void OrthographicCameraController::OnUpdate(Timestep ts) {
   }
 
   camera_.SetPosition(camera_position_);
-  //BENGINE_CORE_INFO("Camera position: ({},{},{})",camera_position_.x,camera_position_.y,camera_position_.z);
+  // auto position = camera_.GetPosition();
+  // BENGINE_CORE_INFO("Camera position: ({},{},{})",position.x,position.y,position.z);
 
   camera_translation_speed_ = zoom_level_;
 }
