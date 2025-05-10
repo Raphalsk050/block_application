@@ -242,121 +242,314 @@ void OpenGLShader::CompileOrGetVulkanBinaries(
 }
 
 void OpenGLShader::CompileOrGetOpenGLBinaries() {
-  auto& shaderData = m_OpenGLSPIRV;
+  try {
+    auto& shaderData = m_OpenGLSPIRV;
 
-  shaderc::Compiler compiler;
-  shaderc::CompileOptions options;
-  options.SetTargetEnvironment(shaderc_target_env_opengl,
-                               shaderc_env_version_opengl_4_5);
-  const bool optimize = false;
-  if (optimize)
-    options.SetOptimizationLevel(shaderc_optimization_level_performance);
+    shaderc::Compiler compiler;
+    shaderc::CompileOptions options;
+    options.SetTargetEnvironment(shaderc_target_env_opengl,
+                                shaderc_env_version_opengl_4_5);
+    const bool optimize = false;
+    if (optimize)
+      options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-  std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+    std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 
-  shaderData.clear();
-  m_OpenGLSourceCode.clear();
-  for (auto&& [stage, spirv] : m_VulkanSPIRV) {
-    std::filesystem::path shaderFilePath = m_FilePath;
-    std::filesystem::path cachedPath =
-        cacheDirectory / (shaderFilePath.filename().string() +
+    shaderData.clear();
+    m_OpenGLSourceCode.clear();
+
+    for (auto&& [stage, spirv] : m_VulkanSPIRV) {
+      std::filesystem::path shaderFilePath = m_FilePath;
+      std::filesystem::path cachedPath =
+          cacheDirectory / (shaderFilePath.filename().string() +
                           Utils::GLShaderStageCachedOpenGLFileExtension(stage));
 
-    std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-    if (in.is_open()) {
-      in.seekg(0, std::ios::end);
-      auto size = in.tellg();
-      in.seekg(0, std::ios::beg);
+      // Try to load from cache first
+      std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
+      bool loadedFromCache = false;
 
-      auto& data = shaderData[stage];
-      data.resize(size / sizeof(uint32_t));
-      in.read((char*)data.data(), size);
-    } else {
-      spirv_cross::CompilerGLSL glslCompiler(spirv);
-      m_OpenGLSourceCode[stage] = glslCompiler.compile();
-      auto& source = m_OpenGLSourceCode[stage];
+      if (in.is_open()) {
+        try {
+          in.seekg(0, std::ios::end);
+          auto size = in.tellg();
+          in.seekg(0, std::ios::beg);
 
-      shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(
-          source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
-      if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-        BENGINE_CORE_ERROR(module.GetErrorMessage());
-        BENGINE_CORE_ASSERT(false);
+          if (size > 0) {
+            auto& data = shaderData[stage];
+            data.resize(size / sizeof(uint32_t));
+            in.read((char*)data.data(), size);
+            loadedFromCache = true;
+
+            // Ensure we also generate GLSL source
+            spirv_cross::CompilerGLSL glslCompiler(spirv);
+            m_OpenGLSourceCode[stage] = glslCompiler.compile();
+            BENGINE_CORE_TRACE("Loaded shader from cache and generated GLSL for stage {0}", Utils::GLShaderStageToString(stage));
+          }
+        } catch (const std::exception& e) {
+          BENGINE_CORE_ERROR("Error loading shader from cache: {0}", e.what());
+          loadedFromCache = false;
+        }
       }
 
-      shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+      // If not loaded from cache, compile it
+      if (!loadedFromCache) {
+        try {
+          // Generate GLSL source from SPIR-V
+          spirv_cross::CompilerGLSL glslCompiler(spirv);
+          m_OpenGLSourceCode[stage] = glslCompiler.compile();
+          auto& source = m_OpenGLSourceCode[stage];
 
-      std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-      if (out.is_open()) {
-        auto& data = shaderData[stage];
-        out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-        out.flush();
-        out.close();
+          BENGINE_CORE_TRACE("Generated GLSL source for {0}, size: {1} bytes",
+                            Utils::GLShaderStageToString(stage), source.size());
+
+          // Compile GLSL back to SPIR-V (for OpenGL)
+          shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(
+              source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
+
+          if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+            BENGINE_CORE_ERROR("Error compiling GLSL to SPIR-V: {0}", module.GetErrorMessage());
+            // Even if SPIR-V compilation fails, we still have the GLSL source for fallback
+          } else {
+            // Store the SPIR-V binary
+            shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+            // Cache the binary
+            std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+            if (out.is_open()) {
+              auto& data = shaderData[stage];
+              out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+              out.flush();
+              out.close();
+            }
+          }
+        } catch (const std::exception& e) {
+          BENGINE_CORE_ERROR("Error generating GLSL or compiling to SPIR-V: {0}", e.what());
+        }
+      }
+
+      // Double-check that we have GLSL source for this stage
+      if (m_OpenGLSourceCode.find(stage) == m_OpenGLSourceCode.end() ||
+          m_OpenGLSourceCode[stage].empty()) {
+        BENGINE_CORE_ERROR("Failed to generate GLSL source for {0}", Utils::GLShaderStageToString(stage));
+
+        // Emergency fallback - create a simple pass-through shader
+        if (stage == GL_VERTEX_SHADER) {
+          m_OpenGLSourceCode[stage] =
+              "#version 450 core\n"
+              "layout(location = 0) in vec3 a_Position;\n"
+              "layout(location = 1) in vec4 a_Color;\n"
+              "layout(location = 0) out vec4 v_Color;\n"
+              "void main() {\n"
+              "    v_Color = a_Color;\n"
+              "    gl_Position = vec4(a_Position, 1.0);\n"
+              "}\n";
+        } else if (stage == GL_FRAGMENT_SHADER) {
+          m_OpenGLSourceCode[stage] =
+              "#version 450 core\n"
+              "layout(location = 0) in vec4 v_Color;\n"
+              "layout(location = 0) out vec4 o_Color;\n"
+              "void main() {\n"
+              "    o_Color = v_Color;\n"
+              "}\n";
+        }
       }
     }
+  } catch (const std::exception& e) {
+    BENGINE_CORE_ERROR("Exception in CompileOrGetOpenGLBinaries: {0}", e.what());
+  } catch (...) {
+    BENGINE_CORE_ERROR("Unknown exception in CompileOrGetOpenGLBinaries");
   }
 }
 
 void OpenGLShader::CreateProgram() {
-  GLuint program = glCreateProgram();
+  try {
+    GLuint program = glCreateProgram();
+    if (program == 0) {
+      BENGINE_CORE_ERROR("Failed to create shader program");
+      return;
+    }
 
-  std::vector<GLuint> shaderIDs;
-  for (auto&& [stage, spirv] : m_OpenGLSPIRV) {
-    GLuint shaderID = shaderIDs.emplace_back(glCreateShader(stage));
-    glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(),
-                   spirv.size() * sizeof(uint32_t));
-    glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
-    glAttachShader(program, shaderID);
+    std::vector<GLuint> shaderIDs;
+
+    // First check if we have both shader types
+    bool hasVertexShader = (m_OpenGLSourceCode.find(GL_VERTEX_SHADER) != m_OpenGLSourceCode.end());
+    bool hasFragmentShader = (m_OpenGLSourceCode.find(GL_FRAGMENT_SHADER) != m_OpenGLSourceCode.end());
+
+    if (!hasVertexShader || !hasFragmentShader) {
+      BENGINE_CORE_ERROR("Missing shader stage: Vertex({0}), Fragment({1})",
+                        hasVertexShader, hasFragmentShader);
+      glDeleteProgram(program);
+      return;
+    }
+
+    // Process all shader stages
+    for (auto&& [stage, source] : m_OpenGLSourceCode) {
+      BENGINE_CORE_TRACE("Processing shader stage: {0}", Utils::GLShaderStageToString(stage));
+
+      if (source.empty()) {
+        BENGINE_CORE_ERROR("Empty source for shader stage {0}", Utils::GLShaderStageToString(stage));
+        continue;
+      }
+
+      // Create shader
+      GLuint shaderID = glCreateShader(stage);
+      if (shaderID == 0) {
+        GLenum error = glGetError();
+        BENGINE_CORE_ERROR("Failed to create shader for stage {0}, GL error: {1}",
+                          Utils::GLShaderStageToString(stage), error);
+        continue;
+      }
+
+      shaderIDs.push_back(shaderID);
+
+      // Use GLSL compilation
+      try {
+        // Clear previous errors
+        while (glGetError() != GL_NO_ERROR) {}
+
+        const char* sourceCStr = source.c_str();
+
+        // Debug info
+        BENGINE_CORE_TRACE("Shader source size: {0} bytes", source.size());
+        if (source.size() > 100) {
+          BENGINE_CORE_TRACE("First part of source: {0}...", source.substr(0, 100));
+        } else {
+          BENGINE_CORE_TRACE("Source: {0}", source);
+        }
+
+        glShaderSource(shaderID, 1, &sourceCStr, nullptr);
+        GLenum error = glGetError();
+        if (error != GL_NO_ERROR) {
+          BENGINE_CORE_ERROR("glShaderSource error: {0}", error);
+          continue;
+        }
+
+        glCompileShader(shaderID);
+        error = glGetError();
+        if (error != GL_NO_ERROR) {
+          BENGINE_CORE_ERROR("glCompileShader error: {0}", error);
+        }
+
+        // Check compilation
+        GLint isCompiled = 0;
+        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isCompiled);
+        if (isCompiled == GL_FALSE) {
+          GLint maxLength = 0;
+          glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
+
+          if (maxLength > 0) {
+            std::vector<GLchar> infoLog(maxLength);
+            glGetShaderInfoLog(shaderID, maxLength, &maxLength, infoLog.data());
+            BENGINE_CORE_ERROR("GLSL compilation failed for {0}:\n{1}",
+                              Utils::GLShaderStageToString(stage), infoLog.data());
+          } else {
+            BENGINE_CORE_ERROR("GLSL compilation failed with no info log");
+          }
+
+          continue;
+        }
+
+        BENGINE_CORE_TRACE("GLSL compilation succeeded for {0}", Utils::GLShaderStageToString(stage));
+        glAttachShader(program, shaderID);
+      } catch (const std::exception& e) {
+        BENGINE_CORE_ERROR("Exception during GLSL compilation: {0}", e.what());
+      } catch (...) {
+        BENGINE_CORE_ERROR("Unknown exception during GLSL compilation");
+      }
+    }
+
+    // Check if we have any shaders attached
+    if (shaderIDs.empty()) {
+      BENGINE_CORE_ERROR("No valid shaders compiled for program");
+      glDeleteProgram(program);
+      return;
+    }
+
+    // Link program
+    BENGINE_CORE_TRACE("Linking shader program");
+    while (glGetError() != GL_NO_ERROR) {} // Clear errors
+
+    glLinkProgram(program);
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+      BENGINE_CORE_ERROR("glLinkProgram error: {0}", error);
+    }
+
+    GLint isLinked;
+    glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+    if (isLinked == GL_FALSE) {
+      GLint maxLength = 0;
+      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+      if (maxLength > 0) {
+        std::vector<GLchar> infoLog(maxLength);
+        glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
+        BENGINE_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
+      } else {
+        BENGINE_CORE_ERROR("Shader linking failed with no info log");
+      }
+
+      glDeleteProgram(program);
+
+      for (auto id : shaderIDs) {
+        glDeleteShader(id);
+      }
+      return;
+    }
+
+    BENGINE_CORE_TRACE("Shader program linked successfully");
+
+    // Clean up shaders
+    for (auto id : shaderIDs) {
+      glDetachShader(program, id);
+      glDeleteShader(id);
+    }
+
+    m_RendererID = program;
+  } catch (const std::exception& e) {
+    BENGINE_CORE_ERROR("Exception in CreateProgram: {0}", e.what());
+  } catch (...) {
+    BENGINE_CORE_ERROR("Unknown exception in CreateProgram");
   }
-
-  glLinkProgram(program);
-
-  GLint isLinked;
-  glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-  if (isLinked == GL_FALSE) {
-    GLint maxLength;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-    std::vector<GLchar> infoLog(maxLength);
-    glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
-    BENGINE_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_FilePath,
-                       infoLog.data());
-
-    glDeleteProgram(program);
-
-    for (auto id : shaderIDs) glDeleteShader(id);
-  }
-
-  for (auto id : shaderIDs) {
-    glDetachShader(program, id);
-    glDeleteShader(id);
-  }
-
-  m_RendererID = program;
 }
 
-void OpenGLShader::Reflect(GLenum stage,
-                           const std::vector<uint32_t>& shaderData) {
-  spirv_cross::Compiler compiler(shaderData);
-  spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData) {
+  try {
+    // For fragment shaders, just log basic info and return
+    if (stage == GL_FRAGMENT_SHADER) {
+      BENGINE_CORE_TRACE("OpenGLShader::Reflect - {0} {1} (skipping detailed reflection for fragment shaders)",
+                         Utils::GLShaderStageToString(stage), m_FilePath);
+      return;
+    }
 
-  BENGINE_CORE_TRACE("OpenGLShader::Reflect - {0} {1}",
-                     Utils::GLShaderStageToString(stage), m_FilePath);
-  BENGINE_CORE_TRACE("    {0} uniform buffers",
-                     resources.uniform_buffers.size());
-  BENGINE_CORE_TRACE("    {0} resources", resources.sampled_images.size());
+    // Only process vertex shaders normally
+    spirv_cross::Compiler compiler(shaderData);
+    spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
-  BENGINE_CORE_TRACE("Uniform buffers:");
-  for (const auto& resource : resources.uniform_buffers) {
-    const auto& bufferType = compiler.get_type(resource.base_type_id);
-    uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
-    uint32_t binding =
-        compiler.get_decoration(resource.id, spv::DecorationBinding);
-    int memberCount = bufferType.member_types.size();
+    BENGINE_CORE_TRACE("OpenGLShader::Reflect - {0} {1}",
+                       Utils::GLShaderStageToString(stage), m_FilePath);
+    BENGINE_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
+    BENGINE_CORE_TRACE("    {0} resources", resources.sampled_images.size());
 
-    BENGINE_CORE_TRACE("  {0}", resource.name);
-    BENGINE_CORE_TRACE("    Size = {0}", bufferSize);
-    BENGINE_CORE_TRACE("    Binding = {0}", binding);
-    BENGINE_CORE_TRACE("    Members = {0}", memberCount);
+    // Only process uniform buffers for vertex shaders
+    if (!resources.uniform_buffers.empty()) {
+      BENGINE_CORE_TRACE("Uniform buffers:");
+      for (const auto& resource : resources.uniform_buffers) {
+        const auto& bufferType = compiler.get_type(resource.base_type_id);
+        uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
+        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        int memberCount = bufferType.member_types.size();
+
+        BENGINE_CORE_TRACE("            {0}", resource.name);
+        BENGINE_CORE_TRACE("  Size    = {0}", bufferSize);
+        BENGINE_CORE_TRACE("  Binding = {0}", binding);
+        BENGINE_CORE_TRACE("  Members = {0}", memberCount);
+      }
+    }
+  } catch (const std::exception& e) {
+    BENGINE_CORE_ERROR("Exception in shader reflection: {0}", e.what());
+  } catch (...) {
+    BENGINE_CORE_ERROR("Unknown exception in shader reflection");
   }
 }
 

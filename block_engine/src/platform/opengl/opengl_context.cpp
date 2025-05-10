@@ -17,19 +17,18 @@ void OpenGLContext::Init() {
   BENGINE_PROFILE_FUNCTION();
 
   glfwMakeContextCurrent(window_handle_);
-  int status =
-      gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+  int status = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
   BENGINE_CORE_ASSERT(status, "Failed to initialize Glad!");
 
   BENGINE_CORE_INFO("OpenGL Info:");
-  // BENGINE_CORE_INFO("  Vendor: {0}", glGetString(GL_VENDOR));
-  // BENGINE_CORE_INFO("  Renderer: {0}", glGetString(GL_RENDERER));
-  // BENGINE_CORE_INFO("  Version: {0}", glGetString(GL_VERSION));
+  BENGINE_CORE_INFO("  Vendor: {}", (const char*)glGetString(GL_VENDOR));
+  BENGINE_CORE_INFO("  Renderer: {}", (const char*)glGetString(GL_RENDERER));
+  BENGINE_CORE_INFO("  Version: {}", (const char*)glGetString(GL_VERSION));
 
   // TODO: Fix this check
-  // BENGINE_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 &&
-  // GLVersion.minor >= 5),
-  //                "Block engine requires at least OpenGL version 4.5!");
+  BENGINE_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 &&
+  GLVersion.minor >= 5),
+                 "Block engine requires at least OpenGL version 4.5!");
 }
 
 void OpenGLContext::SwapBuffers() {

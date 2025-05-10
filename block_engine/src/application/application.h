@@ -43,7 +43,7 @@ class Application {
 
   void Close();
 
-  // ImGuiLayer *GetImGuiLayer() { return imgui_layer_; }
+  ImGuiLayer *GetImGuiLayer() { return imgui_layer_; }
 
   static Application &Get() { return *instance_; }
 

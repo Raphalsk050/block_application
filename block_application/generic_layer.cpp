@@ -28,12 +28,14 @@ void GenericLayer::OnUpdate(BEngine::Timestep ts) {
 
   {
     static float rotation = 0.0f;
-    rotation += ts * 50.0f;
-
+    rotation += ts * 1.0f;
+    circle_transform_ = glm::translate(glm::mat4(1.0f), glm::vec3(sin(rotation), cos(rotation), 0.0f));
     BENGINE_PROFILE_SCOPE("Renderer Draw");
     BEngine::Renderer2D::BeginScene(camera_controller_.GetCamera());
     BEngine::Renderer2D::DrawQuad({0.0,0.0,0.0}, {1.0f, 1.0f},{1.0f,1.0f,1.0f,1.0f});
+    BEngine::Renderer2D::DrawQuad({1.3,0.0,0.0}, {1.0f, 1.0f},{1.0f,0.0f,0.0f,1.0f});
     BEngine::Renderer2D::DrawRotatedQuad(quad_position_, { 1.0f, 1.0f }, rotation,{1.0f,1.0f,1.0f,1.0f});
+    BEngine::Renderer2D::DrawCircle(circle_transform_,{sin(rotation*3.14),1.0f,cos(rotation * 13.31),1.0f});
     BEngine::Renderer2D::EndScene();
   }
 }

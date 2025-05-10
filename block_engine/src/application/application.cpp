@@ -23,6 +23,8 @@ Application::Application(const ApplicationSpecification& specification)
   if (!specification_.WorkingDirectory.empty())
     std::filesystem::current_path(specification_.WorkingDirectory);
 
+  BENGINE_CORE_INFO("Application created: {}",specification_.WorkingDirectory.c_str());
+
   auto window_props = WindowProps(specification.Name, specification.Width,
                                   specification.Height);
   window_ = Window::Create(window_props);
@@ -129,7 +131,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e) {
   }
 
   minimized_ = false;
-  // Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+  Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
   BENGINE_CORE_TRACE("Window resized to: ({},{})", e.GetWidth(), e.GetHeight());
   return false;
 }

@@ -198,12 +198,12 @@ void Renderer2D::Init() {
   for (uint32_t i = 0; i < BEngine::Renderer2DData::MaxTextureSlots; i++)
     samplers[i] = i;
 
-  s_Data.QuadShader = Shader::Create("assets/shaders/Renderer2D_Quad.glsl");
+  s_Data.QuadShader = Shader::Create("C:/_PROJECTS/block_application/block_application/assets/shaders/Renderer2D_Quad.glsl");
   if (s_Data.QuadShader == nullptr)
     BENGINE_CORE_CRITICAL("Shader not found");
 
-  //s_Data.CircleShader = Shader::Create("assets/shaders/Renderer2D_Circle.glsl");
-  //s_Data.LineShader = Shader::Create("assets/shaders/Renderer2D_Line.glsl");
+  s_Data.CircleShader = Shader::Create("C:/_PROJECTS/block_application/block_application/assets/shaders/Renderer2D_Circle.glsl");
+  s_Data.LineShader = Shader::Create("C:/_PROJECTS/block_application/block_application/assets/cache/shaders/Renderer2D_Line.glsl");
   //s_Data.TextShader = Shader::Create("assets/shaders/Renderer2D_Text.glsl");
 
   // Set first texture slot to 0
@@ -484,8 +484,8 @@ void Renderer2D::DrawCircle(const glm::mat4& transform, const glm::vec4& color,
                             int entityID /*= -1*/) {
   BENGINE_PROFILE_FUNCTION();
 
-  // if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-  // 	NextBatch();
+  if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+  	NextBatch();
 
   for (auto QuadVertexPosition : s_Data.QuadVertexPositions) {
     s_Data.CircleVertexBufferPtr->WorldPosition =
