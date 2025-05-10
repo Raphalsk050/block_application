@@ -28,7 +28,7 @@ Application::Application(const ApplicationSpecification& specification)
   window_ = Window::Create(window_props);
   window_->SetEventCallback(BENGINE_BIND_EVENT_FN(Application::OnEvent));
 
-  // Renderer::Init();
+  Renderer::Init();
 
 #ifdef DEBUG
   imgui_layer_ = new ImGuiLayer();
@@ -39,8 +39,8 @@ Application::Application(const ApplicationSpecification& specification)
 Application::~Application() {
   BENGINE_PROFILE_FUNCTION();
 
-  // ScriptEngine::Shutdown();
-  // Renderer::Shutdown();
+  //ScriptEngine::Shutdown();
+  Renderer::Shutdown();
 }
 
 void Application::PushLayer(Layer* layer) {

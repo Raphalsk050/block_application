@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 project(block_engine)
 
-
 ###############################################################
 #### Cmake Variables ##########################################
 ###############################################################
@@ -11,6 +10,7 @@ set(SHADERC_ENABLE_SHARED_CRT ON)
 set(SPIRV_CROSS_CLI OFF CACHE BOOL "Build the CLI binary")
 set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Enable SPIRV-Cross tests")
 set(SPIRV_CROSS_ENABLE_GLSL ON CACHE BOOL "Enable GLSL support")
+set(SPIRV_SKIP_DEBUGINFO ON)
 set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "Skip installation")
 set(GLFW_INSTALL OFF CACHE BOOL "Generate installation target" FORCE)
 
@@ -38,8 +38,6 @@ set(imgui_DIR third_party/ImGui)
 set(imguizmo_DIR third_party/ImGuizmo)
 set(spirv_cross_DIR third_party/spirv-cross)
 set(shaderc_DIR third_party/shaderc)
-set(msdf_atlas_gen_DIR third_party/msdf_custom)
-set(freetype_DIR third_party/freetype)
 
 ###############################################################
 #### platform detection #######################################
@@ -52,8 +50,6 @@ add_subdirectory(${imgui_DIR})
 add_subdirectory(${imguizmo_DIR})
 add_subdirectory(${shaderc_DIR})
 add_subdirectory(${spirv_cross_DIR})
-add_subdirectory(${freetype_DIR})
-add_subdirectory(${msdf_atlas_gen_DIR})
 
 
 ###############################################################
@@ -70,8 +66,6 @@ include_directories(
         ${imguizmo_DIR}
         ${spirv_cross_DIR}
         ${shaderc_DIR}
-        ${msdf_atlas_gen_DIR}
-        ${freetype_DIR}
 )
 
 file(GLOB_RECURSE ENGINE_SRC
@@ -83,7 +77,6 @@ add_library(block_engine STATIC
         ${ENGINE_SRC}
         third_party/stb_image/stb_image.h
         third_party/stb_image/stb_image.cpp
-
 )
 
 
@@ -123,20 +116,24 @@ endif ()
 #### linked libraries #########################################
 ###############################################################
 
-target_link_libraries(ImGui PUBLIC glm glfw glad)
+target_link_libraries(ImGui PRIVATE glm glfw glad)
 
 
-target_include_directories(ImGui PUBLIC
+target_include_directories(ImGui PRIVATE
         ${glad_DIR}/include
         ${linmath_DIR}
         ${imgui_DIR}
 )
 
-target_link_libraries(ImGuizmo PUBLIC ImGui)
-
-target_include_directories(ImGui PUBLIC
+target_link_libraries(ImGuizmo PRIVATE ImGui)
+target_include_directories(ImGuizmo PRIVATE
         ${imgui_DIR}
 
 )
 
-target_link_libraries(block_engine PUBLIC glm glfw glad spdlog ImGui ImGuizmo spirv-cross-core spirv-cross-glsl shaderc msdf_custom)
+target_include_directories(ImGui PRIVATE
+        ${imgui_DIR}
+
+)
+
+target_link_libraries(block_engine PRIVATE glm glfw glad spdlog ImGui ImGuizmo spirv-cross-core spirv-cross-glsl shaderc)

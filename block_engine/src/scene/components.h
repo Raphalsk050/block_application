@@ -160,14 +160,14 @@ namespace BEngine {
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
 
-	struct TextComponent
+	/*struct TextComponent
 	{
 		std::string TextString;
-		Ref<Font> FontAsset = Font::GetDefault();
+		//Ref<Font> FontAsset = Font::GetDefault();
 		glm::vec4 Color{ 1.0f };
 		float Kerning = 0.0f;
 		float LineSpacing = 0.0f;
-	};
+	};*/
 
 	template<typename... Component>
 	struct ComponentGroup
@@ -178,6 +178,6 @@ namespace BEngine {
 		ComponentGroup<TransformComponent, SpriteRendererComponent,
 			CircleRendererComponent, CameraComponent, ScriptComponent,
 			NativeScriptComponent, Rigidbody2DComponent, BoxCollider2DComponent,
-			CircleCollider2DComponent, TextComponent>;
+			CircleCollider2DComponent/*, TextComponent*/>;
 
 }

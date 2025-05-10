@@ -12,5 +12,5 @@ target_compile_definitions(block_application
         DEBUG
 )
 
-target_link_libraries(block_application PRIVATE block_engine)
-target_include_directories(block_application PRIVATE ${PROJECT_SOURCE_DIR}/block_engine)
+target_link_libraries(block_application PRIVATE block_engine ImGui)
+target_include_directories(block_application PRIVATE ${PROJECT_SOURCE_DIR}/block_engine ${PROJECT_SOURCE_DIR}/block_engine/third_party/imgui)

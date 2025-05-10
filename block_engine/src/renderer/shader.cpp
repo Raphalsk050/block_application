@@ -61,6 +61,7 @@ Ref<Shader> ShaderLibrary::Load(const std::string& name,
 
 Ref<Shader> ShaderLibrary::Get(const std::string& name) {
   BENGINE_CORE_ASSERT(Exists(name), "Shader not found!");
+  BENGINE_CORE_CRITICAL("Shader not found!");
   return m_Shaders[name];
 }
 

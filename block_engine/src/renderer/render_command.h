@@ -24,15 +24,15 @@ namespace BEngine {
     }
 
     static void DrawIndexed(const Ref<VertexArray> &vertexArray, uint32_t indexCount = 0) {
-      //renderer_api_->DrawIndexed(vertexArray, indexCount);
+      renderer_api_->DrawIndexed(vertexArray, indexCount);
     }
 
     static void DrawLines(const Ref<VertexArray> &vertexArray, uint32_t vertexCount) {
-      //renderer_api_->DrawLines(vertexArray, vertexCount);
+      renderer_api_->DrawLines(vertexArray, vertexCount);
     }
 
     static void SetLineWidth(float width) {
-      //renderer_api_->SetLineWidth(width);
+      renderer_api_->SetLineWidth(width);
     }
 
   private:

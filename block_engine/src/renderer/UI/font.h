@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include <filesystem>
 
@@ -24,4 +24,4 @@ private:
   Ref<Texture2D> m_AtlasTexture;
 };
 
-}
+}*/

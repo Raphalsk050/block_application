@@ -30,13 +30,13 @@ add_library(msdf_custom STATIC
 )
 
 # Configure include directories
-target_include_directories(msdf_custom PUBLIC
+target_include_directories(msdf_custom PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../msdf_atlas_gen/msdfgen"
         "${CMAKE_CURRENT_SOURCE_DIR}/../msdf_atlas_gen"
 )
 
 # Define preprocessor macros to disable dependencies
-target_compile_definitions(msdf_custom PUBLIC
+target_compile_definitions(msdf_custom PRIVATE
         MSDFGEN_USE_OPENMP=0
         MSDFGEN_USE_CPP11=1
         MSDFGEN_NO_FREETYPE=1

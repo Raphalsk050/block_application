@@ -3,6 +3,7 @@
 #include <src/layer/layer.h>
 
 #include "generic_layer.h"
+#include "src/renderer/renderer_2d.h"
 
 class BlockApplication : public BEngine::Application {
 public:

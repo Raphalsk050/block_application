@@ -46,8 +46,8 @@ namespace BEngine {
 #if defined(DEBUG)
       if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
       }
 #endif
       window_ = glfwCreateWindow((int) props.Width, (int) props.Height,

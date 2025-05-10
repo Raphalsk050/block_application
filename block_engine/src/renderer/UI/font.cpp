@@ -1,4 +1,4 @@
-#include "block_engine/bepch.h"
+/*#include "block_engine/bepch.h"
 #include "block_engine/src/renderer/UI/font.h"
 
 #undef INFINITE
@@ -154,4 +154,4 @@ namespace BEngine {
 		return DefaultFont;
 	}
 
-}
+}*/

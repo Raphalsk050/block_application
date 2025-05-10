@@ -1,5 +1,4 @@
 #pragma once
-
 #define BENGINE_PROFILE 0
 #if BENGINE_PROFILE
 // Resolve which function signature macro will be used. Note that this only

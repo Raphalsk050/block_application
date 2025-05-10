@@ -2,6 +2,11 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/block_engine/third_party/freetype" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/block_engine/third_party/freetype/subprojects/dlg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/block_engine/third_party/msdf_atlas_gen" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/block_engine/third_party/msdf_atlas_gen/artery-font-format" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/block_engine/third_party/msdf_atlas_gen/msdfgen" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/block_engine/third_party/shaderc" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/block_engine/third_party/shaderc/third_party/abseil_cpp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/block_engine/third_party/shaderc/third_party/effcee" vcs="Git" />
