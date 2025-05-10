@@ -1,6 +1,6 @@
 #pragma once
-#include "../base.h"
-#include "../log/belog.h"
+#include "block_engine/src/base.h"
+#include "block_engine/src/log/belog.h"
 #include <filesystem>
 
 namespace BEngine {

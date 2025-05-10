@@ -1,7 +1,8 @@
-#include "../../bepch.h"
 #include "opengl_buffer.h"
 
 #include <glad/glad.h>
+
+#include "../../../bepch.h"
 
 namespace BEngine {
 

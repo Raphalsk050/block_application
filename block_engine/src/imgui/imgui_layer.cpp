@@ -8,8 +8,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include "../../bepch.h"
 #include "../application/application.h"
-#include "../bepch.h"
 
 // TEMPORARY
 #include <GLFW/glfw3.h>

@@ -1,7 +1,8 @@
 #include "graphics_context.h"
-#include "../bepch.h"
-#include "renderer.h"
+
+#include "../../bepch.h"
 #include "../platform/opengl/opengl_context.h"
+#include "renderer.h"
 
 namespace BEngine {
   Scope<GraphicsContext> GraphicsContext::Create(void* window)

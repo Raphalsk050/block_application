@@ -1,13 +1,13 @@
 #include "application.h"
 
-#include "../bepch.h"
-#include "../debug/instrumentor.h"
-#include "../input/input.h"
-#include "../log/belog.h"
-#include "../time.h"
-#include "../timestep.h"
-#include "../imgui/imgui_layer.h"
-#include "../renderer/renderer.h"
+#include "block_engine/bepch.h"
+#include "block_engine/src/debug/instrumentor.h"
+#include "block_engine/src/imgui/imgui_layer.h"
+#include "block_engine/src/input/input.h"
+#include "block_engine/src/log/belog.h"
+#include "block_engine/src/renderer/renderer.h"
+#include "block_engine/src/time.h"
+#include "block_engine/src/timestep.h"
 
 namespace BEngine {
 Application* Application::instance_ = nullptr;
@@ -75,8 +75,7 @@ void Application::OnEvent(Event& e) {
       BENGINE_BIND_EVENT_FN(Application::OnWindowResize));
 
   for (auto it = layer_stack_.rbegin(); it != layer_stack_.rend(); ++it) {
-    if (e.Handled)
-      break;
+    if (e.Handled) break;
     (*it)->OnEvent(e);
   }
 }
@@ -87,7 +86,7 @@ void Application::Run() {
   while (running_) {
     BENGINE_PROFILE_SCOPE("RunLoop");
 
-    float time = Time::GetTime();
+    float time = Timer::GetTime();
     Timestep timestep = time - last_frame_time_;
     last_frame_time_ = time;
 

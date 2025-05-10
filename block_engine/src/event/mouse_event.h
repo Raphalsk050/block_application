@@ -1,7 +1,7 @@
 #pragma once
 
-#include "event.h"
-#include "../input/mouse_codes.h"
+#include "block_engine/src/event/event.h"
+#include "block_engine/src/input/mouse_codes.h"
 
 namespace BEngine {
 

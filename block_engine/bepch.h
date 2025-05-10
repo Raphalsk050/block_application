@@ -7,24 +7,22 @@
 // #endif
 #endif
 
+#include <algorithm>
+#include <array>
+#include <functional>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <memory>
-#include <utility>
-#include <algorithm>
-#include <functional>
-
-#include <string>
 #include <sstream>
-#include <array>
-#include <vector>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <glm/glm.hpp>
+#include <utility>
+#include <vector>
 
-#include "base.h"
-#include "log/belog.h"
-#include "debug/instrumentor.h"
-
+#include "src/base.h"
+#include "src/debug/instrumentor.h"
+#include "src/log/belog.h"
 
 // #ifdef BENGINE_PLATFORM_WINDOWS
 //   #include <Windows.h>

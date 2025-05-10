@@ -1,7 +1,7 @@
 #pragma once
 
-#include "event.h"
-#include "../input/key_codes.h"
+#include "block_engine/src/event/event.h"
+#include "block_engine/src/input/key_codes.h"
 
 namespace BEngine {
 

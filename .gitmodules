@@ -1,0 +1,12 @@
+[submodule "block_engine/third_party/shaderc"]
+	path = block_engine/third_party/shaderc
+	url = https://github.com/google/shaderc.git
+[submodule "block_engine/third_party/spirv-cross"]
+	path = block_engine/third_party/spirv-cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "block_engine/third_party/msdf_atlas_gen"]
+	path = block_engine/third_party/msdf_atlas_gen
+	url = https://github.com/Chlumsky/msdf-atlas-gen.git
+[submodule "block_engine/third_party/freetype"]
+	path = block_engine/third_party/freetype
+	url = https://github.com/freetype/freetype.git

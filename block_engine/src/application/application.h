@@ -1,9 +1,9 @@
 #pragma once
-#include "../bepch.h"
-#include "../event/window_application_event.h"
-#include "../layer/layer.h"
-#include "../layer/layer_stack.h"
-#include "../window/window.h"
+#include "block_engine/bepch.h"
+#include "block_engine/src/event/window_application_event.h"
+#include "block_engine/src/layer/layer.h"
+#include "block_engine/src/layer/layer_stack.h"
+#include "block_engine/src/window/window.h"
 
 using namespace std;
 
