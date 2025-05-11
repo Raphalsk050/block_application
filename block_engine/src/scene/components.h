@@ -11,6 +11,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
+#include "block_engine/src/renderer/mesh.h"
+
 namespace BEngine {
 
 	struct IDComponent
@@ -51,6 +53,16 @@ namespace BEngine {
 				* glm::scale(glm::mat4(1.0f), Scale);
 		}
 	};
+
+        struct ModelRendererComponent {
+          Ref<Model> Model;
+          Ref<Material> OverrideMaterial;
+
+          ModelRendererComponent() = default;
+          ModelRendererComponent(const ModelRendererComponent&) = default;
+          ModelRendererComponent(const Ref<BEngine::Model>& model)
+            : Model(model) {}
+        };
 
 	struct SpriteRendererComponent
 	{

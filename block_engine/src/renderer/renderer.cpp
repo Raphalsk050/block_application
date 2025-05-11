@@ -1,6 +1,8 @@
 #include "block_engine/src/renderer/renderer.h"
+
 #include "block_engine/bepch.h"
 #include "renderer_2d.h"
+#include "renderer_3d.h"
 
 namespace BEngine {
 
@@ -11,7 +13,8 @@ void Renderer::Init()
   BENGINE_PROFILE_FUNCTION();
 
   RenderCommand::Init();
-  Renderer2D::Init();
+  //Renderer2D::Init();
+  Renderer3D::Init();
 }
 
 void Renderer::Shutdown()

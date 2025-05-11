@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block_engine/src/block_engine.h"
+#include "src/camera/camera_3d_controller.h"
 
 class GenericLayer : public BEngine::Layer
 {
@@ -15,9 +16,10 @@ public:
   virtual void OnImGuiRender() override;
   void OnEvent(BEngine::Event& e) override;
 private:
-  BEngine::OrthographicCameraController camera_controller_;
+  BEngine::Camera3DController camera_controller_;
 
-  glm::vec4 square_color_ = { 0.2f, 0.3f, 0.8f, 1.0f };
+  glm::vec4 square_color_ = { 1.0,1.0,1.0, 1.0f };
   glm::vec3 quad_position_ = { 0.0f,0.0f,0.0f };
+  glm::vec3 quad_size_ = { 0.0f,0.0f,0.0f };
   glm::mat4 circle_transform_;
 };
